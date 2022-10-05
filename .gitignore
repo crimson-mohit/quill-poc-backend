@@ -1,8 +1,4 @@
 .env
-.temp/
 .vscode/
 dist-server/
 node_modules/
-uploads/
-assets/
-document-store/
