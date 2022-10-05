@@ -106,7 +106,7 @@ router.post('/upload', upload.single('file'), async (req, res, next) => {
         let newPath = `./assets/${zipEntry.entryName}`;
 
         fs.rename(oldPath, newPath, (err) => {
-          if (err) throw err
+          // if (err) throw err
           console.log('Successfully renamed - AKA moved!')
         });
       }
