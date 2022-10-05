@@ -1,7 +1,5 @@
-import fs from "fs";
+import fs from 'fs';
 import path from 'path';
-import { createRequire } from 'module';
-import { fileURLToPath } from 'url';
 import { JSDOM } from 'jsdom';
 
 // const __filename = fileURLToPath(import.meta.url);
@@ -19,12 +17,12 @@ const JSDOM_TEMPLATE = `
   <script>${mutationObserverPolyfill}</script>
   <script>${quillLibrary}</script>
   <script>
-    document.getSelection = function() {
+    document.getSelection = () => {
       return {
-        getRangeAt: function() { }
+        getRangeAt: () => { }
       };
     };
-    document.execCommand = function (command, showUI, value) {
+    document.execCommand =  (command, showUI, value) => {
       try {
           return document.execCommand(command, showUI, value);
       } catch(e) {}

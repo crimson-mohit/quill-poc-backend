@@ -3,13 +3,11 @@
 import 'dotenv/config';
 import debugLib from 'debug';
 import http from 'http';
-import { Server } from "socket.io";
-const debug = debugLib('quill-poc-backend:server');
+import { Server } from 'socket.io';
 import app from '../app';
+import socketHandler from '../socket-handler/index';
 
-import { QuillDeltaToHtmlConverter } from 'quill-delta-to-html';
-import Delta from "quill-delta";
-
+const debug = debugLib('quill-poc-backend:server');
 const port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
@@ -21,29 +19,17 @@ server.on('listening', onListening);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:4200",
-    methods: ["GET", "POST"]
+    origin: 'http://localhost:4200',
+    methods: ['GET', 'POST']
   }
 });
 
-io.on('connection', (socket) => {
-  console.log('a user connected');
+const onConnection = (socket) => {
+  socketHandler(io, socket);
+}
 
-  let serverSideDelta = {};
+io.on('connection', onConnection);
 
-  socket.on('updateDelta', data => {
-    console.log('incoming request ===> ', data, '\ndelta ===> ', JSON.stringify(data.delta, null, 4));
-
-    let cfg = {};
-    serverSideDelta = {
-      ops: new Delta(serverSideDelta.ops).compose(new Delta(data.delta.ops)).ops
-    };
-    let converter = new QuillDeltaToHtmlConverter(serverSideDelta.ops, cfg);
-    let html = converter.convert();
-
-    console.log('html ===> ', html, '\nserverSideDelta ===> ', serverSideDelta);
-  });
-});
 
 function normalizePort(val) {
   let port = parseInt(val, 10);

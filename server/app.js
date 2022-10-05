@@ -5,8 +5,7 @@ import logger from 'morgan';
 import cors from 'cors';
 
 import indexRouter from './routes/index';
-import uploadRouter from './routes/upload';
-import filesRouter from './routes/files';
+import documentsRouter from './routes/documents';
 
 const app = express();
 
@@ -19,7 +18,6 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.static(path.join(__dirname, '../assets')));
 
 app.use('/', indexRouter);
-app.use('/upload', uploadRouter);
-app.use('/files', filesRouter);
+app.use('/documents', documentsRouter);
 
 export default app;

@@ -6,19 +6,54 @@ import fs from "fs";
 import upload from '../modules/file-upload.js';
 import * as formatConvert from '../modules/format-converter.js';
 
-
 const router = express.Router();
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-// router.get('/', (req, res, next) => {
-//   res.status(404).send('Not found');
-// });
+/*{
+  METHOD: GET
+  PARAMS: {}
+  ROUTE: '/documents'
+}*/
+router.get('/', (req, res, next) => {
+  let listOfDocuments = [];
+  fs.readdirSync('./document-store').forEach(file => {
+    listOfDocuments.push(file);
+  });
 
-router.post('/', upload.single('file'), async (req, res, next) => {
+  res.send({
+    status: true,
+    data: listOfDocuments
+  });
+});
 
-  const formData = new FormData()
-  formData.append('file', fs.createReadStream(req.file.path))
-  formData.append('includeTrackChanges', 'true')
+/*{
+  METHOD: POST
+  PARAMS: { id: ''}
+  ROUTE: '/documents/getById'
+}*/
+router.post('/getById', async (req, res, next) => {
+  var fileContents = fs.readFileSync(`./document-store/${req.body.id}`,'utf8');
+  let delta = formatConvert.convertHtmlToDelta(fileContents);
+
+  // update image src with server endpoint
+  let listOfImageElements = delta.ops.map(item => item.insert).filter(item => typeof item === 'object' && item.image);
+  listOfImageElements.forEach(item => item.image = `http://localhost:8081/${item.image}`);
+
+  res.send({
+    status: true,
+    data: JSON.stringify(delta)
+  });
+});
+
+/*{
+  METHOD: POST
+  PARAMS: FILE
+  ROUTE: '/documents/upload'
+}*/
+router.post('/upload', upload.single('file'), async (req, res, next) => {
+  const formData = new FormData();
+  formData.append('file', fs.createReadStream(req.file.path));
+  formData.append('includeTrackChanges', 'true');
 
   axios({
     method: 'POST',
@@ -31,22 +66,15 @@ router.post('/', upload.single('file'), async (req, res, next) => {
 
     await delay(2*1000);
 
-    // let htmlContent = await readZipArchive('./output/temp.zip');
-    let htmlContent, fileName, delta;
+    let fileName;
     const zip = new AdmZip('./.temp/temp.zip');
     const zipEntries = zip.getEntries();
-    zip.extractAllTo("./document-store", true);
+    zip.extractAllTo('./document-store', true);
 
     for (const zipEntry of zipEntries) {
       if (zipEntry.entryName.includes('.html')) {
         fileName = zipEntry.entryName;
-        htmlContent = zipEntry.getData().toString("utf8");
-        delta = formatConvert.convertHtmlToDelta(htmlContent);
-
-        // update image src with server endpoint
-        let listOfImageElements = delta.ops.map(item => item.insert).filter(item => typeof item === 'object' && item.image);
-        listOfImageElements.forEach(item => item.image = `http://localhost:8081/${item.image}`);
-
+        // let htmlContent = zipEntry.getData().toString('utf8');
       } else if(zipEntry.entryName.includes('.png')) {
         let oldPath = `./document-store/${zipEntry.entryName}`;
         let newPath = `./assets/${zipEntry.entryName}`;
@@ -63,7 +91,6 @@ router.post('/', upload.single('file'), async (req, res, next) => {
     res.send({
       message: 'File uploaded successfully',
       status: true,
-      content: JSON.stringify(delta),
       id: fileName
     });
   })
