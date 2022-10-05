@@ -1,5 +1,6 @@
 import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
+import fs from 'fs';
 
 const MIME_TYPE_MAP = {
   'application/msword': 'doc',
@@ -13,7 +14,12 @@ const fileUpload = multer({
   limits: { fileSize: maxSize },
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, 'uploads');
+      if (!fs.existsSync('./uploads')){
+        fs.mkdirSync('./uploads');
+
+        console.log('Folder Created Successfully.');
+      }
+      cb(null, './uploads');
     },
     filename: (req, file, cb) => {
       const ext = MIME_TYPE_MAP[file.mimetype];

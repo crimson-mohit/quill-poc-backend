@@ -15,6 +15,12 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
   ROUTE: '/documents'
 }*/
 router.get('/', (req, res, next) => {
+  if (!fs.existsSync('./document-store')){
+    fs.mkdirSync('./document-store');
+
+    console.log('Folder Created Successfully.');
+  }
+
   let listOfDocuments = [];
   fs.readdirSync('./document-store').forEach(file => {
     if(file.includes('.json')) {
@@ -54,6 +60,12 @@ router.post('/getById', async (req, res, next) => {
   ROUTE: '/documents/upload'
 }*/
 router.post('/upload', upload.single('file'), async (req, res, next) => {
+  if (!fs.existsSync('./assets')){
+    fs.mkdirSync('./assets');
+
+    console.log('Folder Created Successfully.');
+  }
+
   const formData = new FormData();
   formData.append('file', fs.createReadStream(req.file.path));
   formData.append('includeTrackChanges', 'true');
@@ -65,6 +77,11 @@ router.post('/upload', upload.single('file'), async (req, res, next) => {
     responseType: 'stream'
   })
   .then(async (response) => {
+    if (!fs.existsSync('./.temp')){
+      fs.mkdirSync('./.temp');
+
+      console.log('Folder Created Successfully.');
+    }
     await response.data.pipe(fs.createWriteStream('./.temp/temp.zip'));
 
     await delay(2*1000);
