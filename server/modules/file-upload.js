@@ -1,9 +1,10 @@
-import multer from "multer";
+import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 
 const MIME_TYPE_MAP = {
   'application/msword': 'doc',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx'
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+  'text/plain': 'txt'
 };
 
 const maxSize = 1000 * 1000 * 1000;
@@ -16,7 +17,9 @@ const fileUpload = multer({
     },
     filename: (req, file, cb) => {
       const ext = MIME_TYPE_MAP[file.mimetype];
-      cb(null, uuidv4() + '.' + ext);
+      let originalname = file.originalname.split('.');
+      originalname.pop();
+      cb(null, `${originalname.join('.')}-${uuidv4()}.${ext}`);
     }
   }),
   fileFilter: (req, file, cb) => {
