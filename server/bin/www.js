@@ -19,7 +19,7 @@ server.on('listening', onListening);
 
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:4200',
+    origin: 'https://damp-lowlands-09409.herokuapp.com',
     methods: ['GET', 'POST']
   }
 });
