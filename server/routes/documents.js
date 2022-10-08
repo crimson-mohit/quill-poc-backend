@@ -5,6 +5,7 @@ import AdmZip from 'adm-zip';
 import fs from 'fs';
 import upload from '../modules/file-upload.js';
 import * as formatConvert from '../modules/format-converter.js';
+import cache from '../global.cache.service';
 
 const router = express.Router();
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -48,9 +49,33 @@ router.post('/getById', async (req, res, next) => {
   let listOfImageElements = delta.ops.map(item => item.insert).filter(item => typeof item === 'object' && item.image);
   listOfImageElements.forEach(item => item.image = `http://localhost:8081/${item.image}`);
 
+  if(!cache[req.body.id]) {
+    cache[req.body.id] = {
+      serverSideDelta: {}
+    };
+  }
+
+  cache[req.body.id].serverSideDelta = delta;
+
   res.send({
     status: true,
     data: JSON.stringify(delta)
+  });
+});
+
+router.post('/deleteById', async (req, res, next) => {
+  const fileToBeDeleted = `./document-store/${req.body.id}`;
+  let fileFound = false;
+  if (fs.existsSync(fileToBeDeleted)) {
+    fileFound = true;
+    fs.rmSync(fileToBeDeleted, {
+      force: true
+    });
+  }
+
+  res.send({
+    status: fileFound,
+    message: fileFound ? 'File deleted successfully !' : 'File not found'
   });
 });
 
