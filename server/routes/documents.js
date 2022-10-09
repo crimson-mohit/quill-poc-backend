@@ -3,6 +3,8 @@ import axios from 'axios';
 import FormData from 'form-data';
 import AdmZip from 'adm-zip';
 import fs from 'fs';
+import { v4 as uuidv4 } from 'uuid';
+
 import upload from '../modules/file-upload.js';
 import * as formatConvert from '../modules/format-converter.js';
 import cache from '../global.cache.service';
@@ -32,6 +34,28 @@ router.get('/', (req, res, next) => {
   res.send({
     status: true,
     data: listOfDocuments
+  });
+});
+
+/*{
+  METHOD: GET
+  PARAMS: {}
+  ROUTE: '/createNewDocument'
+}*/
+router.get('/createNewDocument', (req, res, next) => {
+  if (!fs.existsSync('./document-store')){
+    fs.mkdirSync('./document-store');
+
+    console.log('Folder Created Successfully.');
+  }
+
+  let newDocumentName = `new-${uuidv4()}`;
+  fs.writeFileSync(`./document-store/${newDocumentName}.html`, '');
+  fs.writeFileSync(`./document-store/${newDocumentName}.json`, JSON.stringify({"ops": []}));
+
+  res.send({
+    status: true,
+    id: `${newDocumentName}.json`
   });
 });
 

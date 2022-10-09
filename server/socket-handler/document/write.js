@@ -1,12 +1,19 @@
 // import { QuillDeltaToHtmlConverter } from 'quill-delta-to-html';
 import Delta from 'quill-delta';
-import cache from '../../global.cache.service';
 import fs from 'fs';
+
+import cache from '../../global.cache.service';
 
 const writeDocument = (payload) => {
   console.log('incoming request ===> ', payload);
   const documentId = payload.id;
   let cfg = {};
+
+  if(!cache[documentId]) {
+    cache[documentId] = {
+      serverSideDelta: {}
+    };
+  }
 
   cache[documentId].serverSideDelta = {
     ops: new Delta(cache[documentId].serverSideDelta.ops).compose(new Delta(payload.delta.ops)).ops
